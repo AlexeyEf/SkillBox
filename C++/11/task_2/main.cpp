@@ -1,12 +1,12 @@
 #include <iostream>
 
-//общие вопросы
-// Насколько правильно и грамотно я разбил функциональность программы на функции?
+
 bool checkEMail(std::string eMail);
-int separateEMailString(std::string eMail);
+int  getSeparateEMailIdx(std::string eMail);
+std::string getFirstEMailPart(std::string eMail);
+std::string getLastEMailPart(std::string eMail);
 bool checkFirstEMailPart(std::string str);
 bool checkLastEMailPart(std::string str);
-bool checkCharacter(char c, char part); //насколько правильно и грамотно что использовал столько аргументов
 
 int main()
 {
@@ -28,38 +28,45 @@ int main()
 
 bool checkEMail(std::string eMail)
 {
-    int idx = separateEMailString(eMail);
-
-    if(idx == (-1))
-    {
-        return false;
-    }
-
-    return (checkFirstEMailPart(eMail.substr(0, idx)) &&
-            checkLastEMailPart(eMail.substr(idx + 1, eMail.length() - (idx + 1))));
+    return (checkFirstEMailPart(getFirstEMailPart(eMail)) &&
+            checkLastEMailPart(getLastEMailPart(eMail)));
 }
 
-int separateEMailString(std::string eMail)
+int getSeparateEMailIdx(std::string eMail)
 {
-    int idx = 0; // index of @ in the address string
-    for(int i = 0, count = 0; i < eMail.length(); ++i)
+    int idx = 0, count = 0;
+    for(int i = 0; i < eMail.length(); ++i)
     {
         if(eMail[i] == '@')
         {
-            if (count > 0)
+            if (++count > 1)
             {
-                return (-1);
+                break;
             }
-            count++;
             idx = i;
         }
     }
-    return idx;
+    return (count == 1) ? idx : (-1);
+}
+
+std::string getFirstEMailPart(std::string eMail)
+{
+    int idx = getSeparateEMailIdx(eMail);
+
+    return (idx == (-1)) ? "-1" : eMail.substr(0, idx);
+}
+
+std::string getLastEMailPart(std::string eMail)
+{
+    int idx = getSeparateEMailIdx(eMail);
+
+    return ((idx == (-1)) ? "-1" : eMail.substr(idx + 1, eMail.length() - (idx + 1)));
 }
 
 bool checkFirstEMailPart(std::string str)
 {
-    if ((str.length() < 1) ||
+    if ((str == "-1") ||
+        (str.length() < 1) ||
         (str.length() > 64))
     {
         return false;
@@ -67,17 +74,26 @@ bool checkFirstEMailPart(std::string str)
 
     for(int i = 0; i < str.length(); ++i)
     {
-        if(!checkCharacter(str[i], 1))
-        {
+        if (!(((str[i] >= '0') && (str[i] <= '9')) ||
+              ((str[i] >= 'A') && (str[i] <= 'Z')) ||
+              ((str[i] >= 'a') && (str[i] <= 'z')) ||
+             ((str[i] <= '\'') && (str[i] >= '#')) ||
+              ((str[i] >= '^') && (str[i] <= '`')) ||
+              ((str[i] >= '{') && (str[i] <= '~')) ||
+               (str[i] == '!') || (str[i] == '?')  ||
+               (str[i] == '*') || (str[i] == '+')  ||
+               (str[i] == '/') || (str[i] == '=')  || (str[i] == '-') ||
+               ((str[i] == '.') && (i > 0) && ((i + 1) < str.length()) &&
+                (str[i-1] != str[i]) && (str[i] != str[i+1]))))
             return false;
-        }
     }
     return true;
 }
 
 bool checkLastEMailPart(std::string str)
 {
-    if ((str.length() < 1) ||
+    if ((str == "-1") ||
+        (str.length() < 1) ||
         (str.length() > 63))
     {
         return false;
@@ -85,32 +101,12 @@ bool checkLastEMailPart(std::string str)
 
     for(int i = 0; i < str.length(); ++i)
     {
-        if( !checkCharacter(str[i], 2) )
-        {
+        if (!(((str[i] >= '0') && (str[i] <= '9')) ||
+              ((str[i] >= 'A') && (str[i] <= 'Z')) ||
+              ((str[i] >= 'a') && (str[i] <= 'z')) || (str[i] == '-') ||
+              ((str[i] == '.') && (i > 0) && ((i + 1) < str.length()) &&
+               ((str[i-1] != str[i]) || (str[i] != str[i+1])))))
             return false;
-        }
     }
-}
-
-bool checkCharacter(char ch, /*int idx, bool lastIndex,*/ char firstPart)
-{
-    std::cout << ch << " ";
-    //проверка точки
-    if(((ch >= '0') && (ch <= '9')) ||
-       ((ch >= 'A') && (ch <= 'Z')) ||
-       ((ch >= 'a') && (ch <= 'z')) ||
-        (ch == '-') || (ch == '.'))
-        return true;
-
-    if(firstPart == 1)
-    {
-        if((ch == '!' ) || (ch == '?' ) ||
-           (ch <= '\'') && (ch >= '#' ) ||
-           (ch == '*' ) || (ch == '+' ) ||
-           (ch == '/')  || (ch == '=' ) ||
-           ((ch >= '^') && (ch <= '`')) ||
-           ((ch >= '{') && (ch <= '~')))
-             return true;
-    }
-    return false;
+    return true;
 }
