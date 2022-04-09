@@ -51,7 +51,7 @@ bool checkIpOctets(std::vector<std::string> ipOctets)
         //может ниже вынести в отдельную функцию?
         if(octetStr.length() > 1)
         {
-            if(octetStr[0] = '0')
+            if(octetStr[0] == '0')
             {
                 return false;
             }
@@ -59,7 +59,7 @@ bool checkIpOctets(std::vector<std::string> ipOctets)
 
         for(int j = 0; j < octetStr.length(); ++j)
         {
-            if((octetStr[i] < '0') || (octetStr[i] > '9'))
+            if((octetStr[j] < '0') || (octetStr[j] > '9'))
             {
                 return false;
             }
@@ -112,11 +112,19 @@ std::vector<std::string> getIpOctets(std::string ipAddress)
 
     for(int i = 0; i < ipAddress.length(); ++i)
     {
-        if(ipAddress[i] = '.')
+        if(ipAddress[i] == '.')
+        {
+            result.push_back(octet);
+            octet.clear();
+        }
+        else
+        {
+            octet += ipAddress[i];
+        }
+        if(i+1 == ipAddress.length())
         {
             result.push_back(octet);
         }
-        octet =+ ipAddress[i];
     }
     return result;
 }
@@ -133,7 +141,7 @@ int getDigitFromString(std::string str)
     for(unsigned j = 0, digit = 0; j < str.length(); ++j)
     {
         digit = str[j] - '0';
-        result = digit * std::pow(10, str.length() - (j + 1));
+        result += digit * std::pow(10, str.length() - (j + 1));
     }
 
     return result;
