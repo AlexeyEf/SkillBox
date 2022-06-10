@@ -1,7 +1,8 @@
 #include <iostream>
+#include <limits>
 
-std::string encrypt_caesar(std::string str, short shift);
-std::string decrypt_caesar(std::string str, short shift);
+std::string encrypt_caesar(std::string &str, short shift);
+std::string decrypt_caesar(std::string &str, short shift);
 
 int main()
 {
@@ -11,19 +12,19 @@ int main()
 
     std::cout << "Input mode (0 for encrypt string, 1 for decrypt) : ";
     std::cin >> mode;
-    std::cout << "Input shift (from 1 to 28): ";
+    std::cout << "Input shift: ";
     std::cin >> shift;
     std::cout << "Input string: ";
-    std::cin.ignore();// погуглил, вставил эту функцию; не понимаю почему без нее getline не работает
+    std::cin.ignore(std::numeric_limits<int>::max(), '\n');
     std::getline(std::cin, input);
 
     if(mode == 0)
     {
-        std::cout << encrypt_caesar(input, shift);
+        std::cout << encrypt_caesar(input, shift % 26);
     }
     else if(mode == 1)
     {
-        std::cout << decrypt_caesar(input, shift);
+        std::cout << decrypt_caesar(input, shift % 26);
     }
     else
     {
@@ -33,7 +34,7 @@ int main()
     return 0;
 }
 
-std::string encrypt_caesar(std::string str, short shift)
+std::string encrypt_caesar(std::string &str, short shift)
 {
     if(str.empty())
     {
@@ -49,10 +50,8 @@ std::string encrypt_caesar(std::string str, short shift)
         {
             result += str[i];
         }
-        else if((str[i] >= 'A') &&
-                (str[i] <= 'Z') &&
-                ((str[i] + shift > 'Z') ||
-                 (str[i] + shift < 'A')))
+        else if((str[i] >= 'A') && (str[i] <= 'Z') &&
+                ((str[i] + shift > 'Z') || (str[i] + shift < 'A')))
         {
             if(str[i] + shift > 'Z')
             {
@@ -63,10 +62,8 @@ std::string encrypt_caesar(std::string str, short shift)
                 result += 'Z' + shift + (str[i] - 'A'  + 1 );
             }
         }
-        else if((str[i] >= 'a') &&
-                (str[i] <= 'z') &&
-                ((str[i] + shift > 'z')||
-                (str[i] + shift < 'a')))
+        else if((str[i] >= 'a') && (str[i] <= 'z') &&
+                ((str[i] + shift > 'z') || (str[i] + shift < 'a')))
         {
             if(str[i] + shift > 'z')
             {
@@ -85,7 +82,7 @@ std::string encrypt_caesar(std::string str, short shift)
     return result;
 }
 
-std::string decrypt_caesar(std::string str, short shift)
+std::string decrypt_caesar(std::string &str, short shift)
 {
     return encrypt_caesar(str, shift*(-1));
 }
