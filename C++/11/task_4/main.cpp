@@ -1,11 +1,11 @@
 #include <iostream>
 #include <vector>
 
-//уместно ли использовать в качестве возвр. значений char и вектора из char
 char checkGame(const std::vector<std::string> strings);
-std::vector<char> checkStrings(const std::vector<std::string> strings);
-std::vector<char> checkOneString(const std::string str);
+char checkStrings(const std::vector<std::string> strings);
+char checkOneString(const std::string str);
 bool checkCorrectInputString(const std::string inputStr);
+std::vector<char> countSymbols(const std::vector<std::string> strings);
 std::vector<std::string> getColumns(const std::vector<std::string> strings);
 std::vector<std::string> getDiags(const std::vector<std::string> strings);
 
@@ -22,7 +22,6 @@ int main()
     std::cin >> str2;
     std::cin >> str3;
 
-    //правильно и корректно ли применять такую конструкцию ниже (3 функции подряд в условии цикла)?
     while(!(checkCorrectInputString(str1) && checkCorrectInputString(str2) && checkCorrectInputString(str3)))
     {
         std::cout << "Invalid input" << std::endl;
@@ -50,8 +49,9 @@ int main()
     {
         std::cout << "Nobody" << std::endl;
     }
-        //корректно ли сообщать об ошибке в вызывающую функцию с помощью -1?
-    else if(gameWinner == -1)
+        //корректно ли при возвр. типе char сообщать об ошибке с помощью символа '0'?
+        //или лучше использовать пустой символ ''?
+    else if(gameWinner == '0')
     {
         std::cout << "Incorrect" << std::endl;
     }
@@ -61,11 +61,14 @@ int main()
 
 bool checkCorrectInputString(const std::string inputStr)
 {
-    if(inputStr.empty() || inputStr.length() != 3)
+    if(inputStr.length() != 3)
     {
         return false;
     }
 
+    //компилятор выдает предупреждение: comparison between signed and unsigned integer expressions
+    //как его устранить?
+    //как корректно сравнивать целые числа с размером контейнера?
     for(int i = 0; i < inputStr.length(); ++i)
     {
         if((inputStr[i] != 'X') && (inputStr[i] != 'O') && (inputStr[i] != '.'))
@@ -76,44 +79,74 @@ bool checkCorrectInputString(const std::string inputStr)
     return true;
 }
 
+std::vector<char> countSymbols(const std::vector<std::string> strings)
+{
+    std::vector<char> result = {0, 0};
+
+    for(int i = 0; i < strings.size(); ++i)
+    {
+        for(int j = 0; j < strings[i].length(); ++j)
+        {
+            if(strings[i][j] == 'X')
+            {
+                ++result[0];
+            }
+            else if(strings[i][j] == 'O')
+            {
+                ++result[1];
+            }
+        }
+    }
+
+    return result;
+}
+
 char checkGame(const std::vector<std::string> strings)
 {
-    //целесообразно ли здесь объявлять 3 переменные?
-    std::vector<char> result1 = {0, 0, 0};
-    std::vector<char> result2 = {0, 0, 0};
-    std::vector<char> result3 = {0, 0, 0};
+    std::vector<char> countSymb = {0, 0};
 
+    char result1;
+    char result2;
+    char result3;
+
+    countSymb = countSymbols(strings);
     result1 = checkStrings(strings);
     result2 = checkStrings(getColumns(strings));
     result3 = checkStrings(getDiags(strings));
 
-    //уместна ли здесь такая громоздкая конструкция?
-    if(result1[2] == -1 || result2[2] == -1 || result3[2] == -1      ||
-       result1[2] != '.' &&  result2[2] != '.' && result3[2] != '.'  &&
-       (result1[2] == result2[2] || result2[2] == result3[2] || result1[2] == result3[2]))
+    if(result1 == '0' || result2 == '0' || result3 == '0'    ||
+       (result1 != '.' &&  result2 != '.' && result3 != '.'  &&
+        (result1 == result2 || result2 == result3 || result1 == result3)))
     {
-        return -1;
+        return '0';
     }
-    else if(result1[2] == '.' && result2[2] == '.' && result3[2] == '.')
+    else if(result1 == '.' && result2 == '.' && result3 == '.')
     {
-        return '.';
-    }
-    else if(result1[2] == 'X' || result2[2] == 'X' || result3[2] == 'X')
-    {
-        if((result1[0] - result1[1]) != 1)
+        if((countSymb[0] == countSymb[1]) || (countSymb[0] - countSymb[1]) == 1)
         {
-            return -1;
+            return '.';
+        }
+        else
+        {
+            return '0';
+        }
+    }
+    else if(result1 == 'X' || result2 == 'X' || result3 == 'X')
+    {
+        if((countSymb[0] - countSymb[1]) != 1)
+        {
+            return '0';
         }
         else
         {
             return 'X';
         }
     }
-    else if(result1[2] == 'O' || result2[2] == 'O' || result3[2] == 'O')
+    else if(result1 == 'O' || result2 == 'O' || result3 == 'O')
     {
-        if((result1[1] - result1[0]) != 1)
+        if(countSymb[1] != countSymb[0])
         {
-            return -1;
+            return '0';
         }
         else
         {
@@ -122,65 +155,75 @@ char checkGame(const std::vector<std::string> strings)
     }
 }
 
-std::vector<char> checkStrings(const std::vector<std::string> strings)
+char checkStrings(const std::vector<std::string> strings)
 {
     bool winner = false;
-    std::vector<char> resultFunc = {0, 0, 0}; //возвращение результата данной функции в формате
-    //{сколько X, сколько O, победитель}
-    std::vector<char> result = {0, 0}; //возвращение результата функции проверки одной строки
-    //выдает количество знаков X или O в строке
+    char result;
+    char resultFunc;
 
     for(int i = 0; i < strings.size(); ++i)
     {
         result = checkOneString(strings[i]);
 
-        for(int j = 0; j < result.size(); ++j)
-        {
-            resultFunc[j] += result[j];
-        }
-
-        if((result.at(0) == 3) || (result.at(1) == 3))
+        if((result == 'X') || (result == 'O'))
         {
             if(winner)
             {
-                resultFunc[2] = -1;
+                resultFunc = '0';
                 return resultFunc;
             }
             else
             {
                 winner = true;
-                if(result.at(0) == 3)
+                if(result == 'X')
                 {
-                    resultFunc[2] = 'X';
+                    resultFunc = 'X';
                 }
-                else if((result.at(1) == 3))
+                else if(result == 'O')
                 {
-                    resultFunc[2] = 'O';
+                    resultFunc = 'O';
                 }
             }
         }
     }
     if(!winner)
     {
-        resultFunc[2] = '.';
+        resultFunc = '.';
     }
     return resultFunc;
 }
 
-std::vector<char> checkOneString(const std::string str)
+char checkOneString(const std::string str)
 {
-    std::vector<char> result = {0, 0};
+    char result;
+    //можно ли например объявить 2 переменные ниже типом char?
+    //если диапазон счета маленький (например всегда до 100)
+    //и если они не будут никогда содержать символов, а только цифры
+    int countX = 0;
+    int countO = 0;
 
     for(int i = 0; i < str.length(); ++i)
     {
         if(str[i] == 'X')
         {
-            ++result[0];
+            ++countX;
         }
         else if(str[i] == 'O')
         {
-            ++result[1];
+            ++countO;
         }
+    }
+    if(countX == 3)
+    {
+        result = 'X';
+    }
+    else if(countO == 3)
+    {
+        result = 'O';
+    }
+    else
+    {
+        result = '.';
     }
     return result;
 }
