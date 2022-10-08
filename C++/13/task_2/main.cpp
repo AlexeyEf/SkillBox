@@ -9,7 +9,7 @@ int main()
 
     for(int i = 0; i < prices.size(); ++i)
     {
-       sum += prices[i]*items[i];
+       sum += prices[items[i]];
     }
 
     std::cout << "Cost of purchases = " << sum << std::endl;
