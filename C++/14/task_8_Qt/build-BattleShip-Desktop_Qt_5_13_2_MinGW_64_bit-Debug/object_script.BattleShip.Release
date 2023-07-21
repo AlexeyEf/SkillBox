@@ -1,0 +1,11 @@
+release/application.o
+release/central_widget.o
+release/field_label.o
+release/main.o
+release/mainwindow.o
+release/play_manager.o
+release/moc_application.o
+release/moc_central_widget.o
+release/moc_field_label.o
+release/moc_mainwindow.o
+release/moc_play_manager.o
