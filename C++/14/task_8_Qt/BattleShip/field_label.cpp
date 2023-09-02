@@ -88,11 +88,12 @@ namespace battleship
          {
              return;
          }
+         setTmpPxmp();
          paintingPoint = point;
+         startStopPaintShip = true;      
          twinkleTimer->start(200);
          paintRect(getIndxRect(point));
-         startStopPaintShip = true;
-         show_message("Установите конечную координату корабля");
+         emit show_message("Установите конечную координату корабля");
      }
 
      void FieldLabel::stopSetShip(QPoint point)
@@ -101,17 +102,62 @@ namespace battleship
          {
              return;
          }
+         bool checkShip = false;
          twinkleTimer->stop();
-         QRect rect(getIndxRect(paintingPoint).topLeft(), getIndxRect(point).bottomRight());
-         qDebug() << rect.topLeft().x() << rect.topLeft().y()
-                  << rect.bottomRight().x() << rect.bottomRight().y();
-         paintRect(rect);
-         paintingPoint = point;
          startStopPaintShip = false;
-         show_message("Корабль установлен");
+         getTmpPxmp();
+         emit set_ship(paintingPoint, point, checkShip);
+         if(checkShip)
+         {
+             QRect rect(getIndxRect(paintingPoint).topLeft(), getIndxRect(point).bottomRight());
+             paintShip(rect);
+             emit show_message("Корабль установлен");
+         }
+         else
+         {
+             emit show_message("Неправильные координаты размещения корабля. Повторите попытку");
+         }
      }
 
-     void FieldLabel::paintRect(QRect rect, QColor color)
+     void FieldLabel::getTmpPxmp()
+     {
+         if(!pxmp->isNull()   &&
+            !tmpPxmp.isNull()   )
+         {
+             *pxmp = tmpPxmp;
+             setPixmap(*pxmp);
+         }
+     }
+
+     void FieldLabel::setTmpPxmp()
+     {
+         if(!pxmp->isNull())
+         {
+             tmpPxmp = *pxmp;
+         }
+     }
+
+     void FieldLabel::paintShip(QRect rect)
+     {
+         qDebug() << rect.topLeft().x()     << rect.topLeft().y()
+                  << rect.bottomRight().x() << rect.bottomRight().y();
+         paintRect(rect, 2.5, Qt::black);
+     }
+
+     void FieldLabel::fillRect(QRect rect)
+     {
+         QPainter painter;
+
+         if(!painter.begin(pxmp))
+         {
+             return;
+         }
+         painter.fillRect(rect, QBrush(Qt::white));
+         painter.end();
+         setPixmap(*pxmp);
+     }
+
+     void FieldLabel::paintRect(QRect rect)
      {
          QPainter painter;
 
@@ -122,6 +168,24 @@ namespace battleship
          QBrush brush(twinkleColor);
          qDebug() << twinkleColor.name();
          QPen pen(brush, 2.5);
+         painter.setPen(pen);
+         painter.drawRect(rect);
+
+         painter.end();
+         setPixmap(*pxmp);
+     }
+
+     void FieldLabel::paintRect(QRect rect, qreal lineSize, QColor color)
+     {
+         QPainter painter;
+
+         if(!painter.begin(pxmp))
+         {
+             return;
+         }
+         QBrush brush(color);
+         qDebug() << color.name();
+         QPen pen(brush, lineSize);
          painter.setPen(pen);
          painter.drawRect(rect);
 
@@ -141,7 +205,7 @@ namespace battleship
              twinkleColor=Qt::darkGreen;
              twinkleTurn = true;
          }
-         paintRect(getIndxRect(paintingPoint));
+         if(startStopPaintShip)
+            paintRect(getIndxRect(paintingPoint));
      }
-
 }

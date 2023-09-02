@@ -18,6 +18,7 @@ namespace battleship
 
         signals:
            void show_message(QString message);
+           void set_ship(QPoint paintingPoint, QPoint point, bool& checkShip);
 
         private:
            FieldLabel* fieldPlayer1;

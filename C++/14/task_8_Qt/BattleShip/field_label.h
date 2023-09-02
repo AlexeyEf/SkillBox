@@ -17,6 +17,7 @@ namespace battleship
 
         signals:
             void show_message(QString message);
+            void set_ship(QPoint paintingPoint, QPoint point, bool& checkShip);
 
         public slots:
             void startSetShip(QPoint point);
@@ -28,6 +29,7 @@ namespace battleship
 
         private:
             QPixmap* pxmp;
+            QPixmap tmpPxmp;
             QTimer *twinkleTimer;
             QPoint paintingPoint;
             QColor twinkleColor;
@@ -36,13 +38,16 @@ namespace battleship
             bool paintTwinkle;
             bool killTwinkle;
 
-            //void paintRect(QRect rect);
-            void paintRect(QRect rect, QColor color = Qt::black);
+            void fillRect(QRect rect);
+            void paintRect(QRect rect);
+            void paintRect(QRect rect, qreal lineSize, QColor color = Qt::black);
+            void paintShip(QRect rect);
+            void getTmpPxmp();
+            void setTmpPxmp();
             void paintGrid();
             QPoint getCoordOnGrid(QPoint mouseCoord);
             QRect getIndxRect(QPoint indxPoint);
     };
-
 }
 
 #endif // FIELD_LABEL_H

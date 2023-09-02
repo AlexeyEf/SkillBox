@@ -43,6 +43,7 @@ namespace battleship
         vLayout1->addWidget(buttonPlayer1);
 
         connect(fieldPlayer1, SIGNAL(show_message(QString)), this, SIGNAL(show_message(QString)));
+        connect(fieldPlayer1, SIGNAL(set_ship(QPoint, QPoint, bool&)), this, SIGNAL(set_ship(QPoint, QPoint, bool&)));
     }
 
 
